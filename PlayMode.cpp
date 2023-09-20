@@ -14,7 +14,6 @@
 
 GLuint world_meshes_for_lit_color_texture_program = 0;
 Scene::Drawable::Pipeline wall_pipeline;
-glm::vec3 wall_scale;
 Load<MeshBuffer> world_meshes(LoadTagDefault, []() -> MeshBuffer const * {
     MeshBuffer const *ret = new MeshBuffer(data_path("world.pnct"));
     world_meshes_for_lit_color_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
@@ -35,7 +34,6 @@ Load<Scene> world_scene(LoadTagDefault, []() -> Scene const * {
                 
                 if (transform->name == "Wall") {
                     wall_pipeline = pipeline;
-                    wall_scale = transform->scale;
                 } else {
                     scene.drawables.emplace_back(transform);
                     scene.drawables.back().pipeline = pipeline;
@@ -68,7 +66,6 @@ PlayMode::PlayMode() :
                 scene.transforms.emplace_back();
                 scene.transforms.back().position = glm::vec3(4 * row, 4 * col + 2, 0);
                 scene.transforms.back().rotation = glm::angleAxis(glm::pi<float>() / 2.0f, glm::vec3(0, 0, 1));
-                scene.transforms.back().scale = wall_scale;
                 scene.drawables.emplace_back(&scene.transforms.back());
                 scene.drawables.back().pipeline = wall_pipeline;
             }
@@ -76,7 +73,6 @@ PlayMode::PlayMode() :
                 scene.transforms.emplace_back();
                 scene.transforms.back().position = glm::vec3(4 * row + 2, 4 * col, 0);
                 scene.transforms.back().rotation = glm::angleAxis(0.0f, glm::vec3(0, 0, 1));
-                scene.transforms.back().scale = wall_scale;
                 scene.drawables.emplace_back(&scene.transforms.back());
                 scene.drawables.back().pipeline = wall_pipeline;
             }
@@ -87,7 +83,6 @@ PlayMode::PlayMode() :
             scene.transforms.emplace_back();
             scene.transforms.back().position = glm::vec3(4 * level.height, 4 * col + 2, 0);
             scene.transforms.back().rotation = glm::angleAxis(glm::pi<float>() / 2.0f, glm::vec3(0, 0, 1));
-            scene.transforms.back().scale = wall_scale;
             scene.drawables.emplace_back(&scene.transforms.back());
             scene.drawables.back().pipeline = wall_pipeline;
         }
@@ -97,7 +92,6 @@ PlayMode::PlayMode() :
             scene.transforms.emplace_back();
             scene.transforms.back().position = glm::vec3(4 * row + 2, 4 * level.width, 0);
             scene.transforms.back().rotation = glm::angleAxis(0.0f, glm::vec3(0, 0, 1));
-            scene.transforms.back().scale = wall_scale;
             scene.drawables.emplace_back(&scene.transforms.back());
             scene.drawables.back().pipeline = wall_pipeline;
         }
@@ -109,9 +103,12 @@ PlayMode::PlayMode() :
         throw std::runtime_error(
                 "Expecting scene to have exactly one camera, but it has " + std::to_string(scene.cameras.size()));
     camera = &scene.cameras.front();
+    // camera follows the player
+    camera->transform->parent = player;
     
     // start location sound
-    triangle.set_frequency(440);
+    triangle_x.set_frequency(440);
+    triangle_y.set_frequency(440);
     
     // start background
     // TODO
@@ -181,8 +178,6 @@ void PlayMode::update(float elapsed) {
         if (move != glm::vec3(0.0f, 0.0f, 0.0f)) move = glm::normalize(move) * PlayerSpeed * elapsed;
         
         player->position += move;
-        // camera follows the player
-        camera->transform->position += move;
     }
     
     // reset button press counters:
@@ -201,8 +196,10 @@ void PlayMode::update(float elapsed) {
 
 void PlayMode::tick() {
     if (tick_count % 2 == 1) {
-        triangle.set_frequency(440 * powf(2, player->position.x / 1000));
-        triangle.play();
+        triangle_x.set_frequency(440 * powf(2, player->position.x / 1000));
+        triangle_x.play();
+        triangle_y.set_frequency(440 * powf(2, player->position.y / 1000));
+        triangle_y.play();
     }
     
     tick_count++;

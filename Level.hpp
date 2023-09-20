@@ -25,6 +25,8 @@ enum class Direction {
 /*
  * A level structure. Just stores starting info, should not be modified after creation.
  * Starts at the bottom left corner.
+ *
+ * TODO: add frequency bounds, beep rate and background sound
  */
 struct Level {
     size_t width, height;

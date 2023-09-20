@@ -3,7 +3,7 @@
 #include "Sound.hpp"
 
 /*
- * An overcomplicated structure for real-time adjustable triangle waves.
+ * An overcomplicated structure for real-time adjustable triangle_x waves.
  */
 struct TriangleWave {
     // How long to play the sound, in seconds

@@ -46,6 +46,6 @@ struct PlayMode : Mode {
     //camera:
     Scene::Camera *camera = nullptr;
     
-    // TODO: add another triangle for the y axis
-    TriangleWave triangle;
+    TriangleWave triangle_x;
+    TriangleWave triangle_y;
 };

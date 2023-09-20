@@ -22,6 +22,8 @@ bool Level::has_border(size_t row, size_t col, Direction direction) {
             return has_left(cells[row * width + col]);
         case Direction::Right:
             return col + 1 == width || has_left(cells[row * width + col + 1]);
+        default:
+            return false;
     }
 }
 
