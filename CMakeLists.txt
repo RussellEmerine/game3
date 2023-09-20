@@ -20,6 +20,7 @@ include_directories(
 )
 
 add_executable(
+        main.cpp
         ColorProgram.cpp
         ColorProgram.hpp
         ColorTextureProgram.cpp
@@ -64,11 +65,12 @@ add_executable(
         load_save_png.hpp
         load_wav.cpp
         load_wav.hpp
-        main.cpp
         read_write_chunk.hpp
         show-meshes.cpp
         show-scene.cpp
         ColorProgram.cpp
         TriangleWave.cpp
         TriangleWave.hpp
+        Level.cpp
+        Level.hpp
 )

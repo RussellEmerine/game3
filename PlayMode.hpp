@@ -3,6 +3,7 @@
 #include "Scene.hpp"
 #include "Sound.hpp"
 #include "TriangleWave.hpp"
+#include "Level.hpp"
 
 #include <glm/glm.hpp>
 
@@ -29,7 +30,7 @@ struct PlayMode : Mode {
     
     //----- game state -----
     Scene::Transform *player = nullptr;
-    Scene::Transform *wall = nullptr;
+    // There is also a hidden wall mesh/pipeline in the .cpp file
     
     //input tracking:
     struct Button {
@@ -39,6 +40,8 @@ struct PlayMode : Mode {
     
     //local copy of the game scene (so code can change it during gameplay):
     Scene scene;
+    
+    Level level;
     
     //camera:
     Scene::Camera *camera = nullptr;

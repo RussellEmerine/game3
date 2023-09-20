@@ -10,7 +10,11 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+// Assume the wall length is 4
+
 GLuint world_meshes_for_lit_color_texture_program = 0;
+Scene::Drawable::Pipeline wall_pipeline;
+glm::vec3 wall_scale;
 Load<MeshBuffer> world_meshes(LoadTagDefault, []() -> MeshBuffer const * {
     MeshBuffer const *ret = new MeshBuffer(data_path("world.pnct"));
     world_meshes_for_lit_color_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
@@ -18,33 +22,86 @@ Load<MeshBuffer> world_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 });
 
 Load<Scene> world_scene(LoadTagDefault, []() -> Scene const * {
-    return new Scene(data_path("world.scene"),
-                     [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name) {
-                         Mesh const &mesh = world_meshes->lookup(mesh_name);
-                         
-                         scene.drawables.emplace_back(transform);
-                         Scene::Drawable &drawable = scene.drawables.back();
-                         
-                         drawable.pipeline = lit_color_texture_program_pipeline;
-                         
-                         drawable.pipeline.vao = world_meshes_for_lit_color_texture_program;
-                         drawable.pipeline.type = mesh.type;
-                         drawable.pipeline.start = mesh.start;
-                         drawable.pipeline.count = mesh.count;
-                         
-                     });
+    return new Scene(
+            data_path("world.scene"),
+            [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name) {
+                Mesh const &mesh = world_meshes->lookup(mesh_name);
+                
+                Scene::Drawable::Pipeline pipeline = lit_color_texture_program_pipeline;
+                pipeline.vao = world_meshes_for_lit_color_texture_program;
+                pipeline.type = mesh.type;
+                pipeline.start = mesh.start;
+                pipeline.count = mesh.count;
+                
+                if (transform->name == "Wall") {
+                    wall_pipeline = pipeline;
+                    wall_scale = transform->scale;
+                } else {
+                    scene.drawables.emplace_back(transform);
+                    scene.drawables.back().pipeline = pipeline;
+                }
+            });
 });
 
-PlayMode::PlayMode() : scene(*world_scene) {
-    // get pointers to leg for convenience:
+PlayMode::PlayMode() :
+        scene(*world_scene),
+        // TODO: do something about this
+        level(
+                {
+                        {Cell::Corner, Cell::Horiz,  Cell::Horiz,  Cell::Horiz},
+                        {Cell::Vert,   Cell::Corner, Cell::Horiz,  Cell::None},
+                        {Cell::Vert,   Cell::Vert,   Cell::Corner, Cell::Horiz},
+                        {Cell::Vert,   Cell::Vert,   Cell::None,   Cell::Vert},
+                },
+                0, 0, 0, 3
+        
+        ) {
     for (auto &transform: scene.transforms) {
         if (transform.name == "Player") player = &transform;
-        else if (transform.name == "Wall") wall = &transform;
     }
     if (player == nullptr) throw std::runtime_error("Player not found.");
-    if (wall == nullptr) throw std::runtime_error("Wall not found.");
+    player->position = glm::vec3(level.start_row * 4 + 2, level.start_col * 4 + 2, 0);
     
-    // TODO: actually get level data and initialize walls
+    for (size_t row = 0; row < level.height; row++) {
+        for (size_t col = 0; col < level.width; col++) {
+            if (level.has_border(row, col, Direction::Down)) {
+                scene.transforms.emplace_back();
+                scene.transforms.back().position = glm::vec3(4 * row, 4 * col + 2, 0);
+                scene.transforms.back().rotation = glm::angleAxis(glm::pi<float>() / 2.0f, glm::vec3(0, 0, 1));
+                scene.transforms.back().scale = wall_scale;
+                scene.drawables.emplace_back(&scene.transforms.back());
+                scene.drawables.back().pipeline = wall_pipeline;
+            }
+            if (level.has_border(row, col, Direction::Left)) {
+                scene.transforms.emplace_back();
+                scene.transforms.back().position = glm::vec3(4 * row + 2, 4 * col, 0);
+                scene.transforms.back().rotation = glm::angleAxis(0.0f, glm::vec3(0, 0, 1));
+                scene.transforms.back().scale = wall_scale;
+                scene.drawables.emplace_back(&scene.transforms.back());
+                scene.drawables.back().pipeline = wall_pipeline;
+            }
+        }
+    }
+    for (size_t col = 0; col < level.width; col++) {
+        if (level.has_border(level.height - 1, col, Direction::Up)) {
+            scene.transforms.emplace_back();
+            scene.transforms.back().position = glm::vec3(4 * level.height, 4 * col + 2, 0);
+            scene.transforms.back().rotation = glm::angleAxis(glm::pi<float>() / 2.0f, glm::vec3(0, 0, 1));
+            scene.transforms.back().scale = wall_scale;
+            scene.drawables.emplace_back(&scene.transforms.back());
+            scene.drawables.back().pipeline = wall_pipeline;
+        }
+    }
+    for (size_t row = 0; row < level.height; row++) {
+        if (level.has_border(row, level.width - 1, Direction::Right)) {
+            scene.transforms.emplace_back();
+            scene.transforms.back().position = glm::vec3(4 * row + 2, 4 * level.width, 0);
+            scene.transforms.back().rotation = glm::angleAxis(0.0f, glm::vec3(0, 0, 1));
+            scene.transforms.back().scale = wall_scale;
+            scene.drawables.emplace_back(&scene.transforms.back());
+            scene.drawables.back().pipeline = wall_pipeline;
+        }
+    }
     
     // get pointer to camera for convenience:
     // TODO: make this nicer and not look at scene cameras

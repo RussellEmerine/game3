@@ -1,5 +1,7 @@
 #include "TriangleWave.hpp"
 
+#include <algorithm>
+
 // Entries per second
 constexpr size_t EPS = 48000;
 // Number of indices
