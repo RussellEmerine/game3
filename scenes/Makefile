@@ -9,6 +9,7 @@ else ifeq ($(UNAME_S),Linux)
 else
 	BLENDER = blender
 endif
+BLENDER = Blender
 
 EXPORT_MESHES=export-meshes.py
 EXPORT_SCENE=export-scene.py
@@ -16,12 +17,12 @@ EXPORT_SCENE=export-scene.py
 DIST=../dist
 
 all : \
-	$(DIST)/hexapod.pnct \
-	$(DIST)/hexapod.scene \
+	$(DIST)/world.pnct \
+	$(DIST)/world.scene \
 
 
-$(DIST)/hexapod.scene : hexapod.blend $(EXPORT_SCENE)
+$(DIST)/world.scene : world.blend $(EXPORT_SCENE)
 	$(BLENDER) --background --python $(EXPORT_SCENE) -- '$<':Main '$@'
 
-$(DIST)/hexapod.pnct : hexapod.blend $(EXPORT_MESHES)
+$(DIST)/world.pnct : world.blend $(EXPORT_MESHES)
 	$(BLENDER) --background --python $(EXPORT_MESHES) -- '$<':Main '$@'

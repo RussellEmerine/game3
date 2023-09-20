@@ -69,4 +69,6 @@ add_executable(
         show-meshes.cpp
         show-scene.cpp
         ColorProgram.cpp
+        TriangleWave.cpp
+        TriangleWave.hpp
 )
