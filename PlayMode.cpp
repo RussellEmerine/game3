@@ -8,6 +8,7 @@
 #include "gl_errors.hpp"
 #include "data_path.hpp"
 
+#include <algorithm>
 #include <glm/gtc/type_ptr.hpp>
 
 // Assume the wall length is 4
@@ -178,6 +179,21 @@ void PlayMode::update(float elapsed) {
         if (move != glm::vec3(0.0f, 0.0f, 0.0f)) move = glm::normalize(move) * PlayerSpeed * elapsed;
         
         player->position += move;
+        auto row = (size_t) (player->position.x / 4), col = (size_t) (player->position.y / 4);
+        // Assume player has radius 0.5
+        constexpr float r = 0.6f;
+        if (level.has_border(row, col, Direction::Down)) {
+            player->position.x = std::max(player->position.x, (float) row * 4 + r);
+        }
+        if (level.has_border(row, col, Direction::Up)) {
+            player->position.x = std::min(player->position.x, (float) (row + 1) * 4 - r);
+        }
+        if (level.has_border(row, col, Direction::Left)) {
+            player->position.y = std::max(player->position.y, (float) col * 4 + r);
+        }
+        if (level.has_border(row, col, Direction::Right)) {
+            player->position.y = std::min(player->position.y, (float) (col + 1) * 4 - r);
+        }
     }
     
     // reset button press counters:
