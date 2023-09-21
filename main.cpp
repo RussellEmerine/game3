@@ -6,6 +6,7 @@
 
 //For asset loading:
 #include "Load.hpp"
+#include "data_path.hpp"
 
 //For sound init:
 #include "Sound.hpp"
@@ -112,7 +113,8 @@ int main(int argc, char **argv) {
     call_load_functions();
     
     //------------ create game mode + make current --------------
-    Mode::set_current(std::make_shared<PlayMode>());
+    Level level1(std::filesystem::path(data_path("levels/level1/")));
+    Mode::set_current(std::make_shared<PlayMode>(level1));
     
     //------------ main loop ------------
     

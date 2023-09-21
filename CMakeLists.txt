@@ -73,4 +73,5 @@ add_executable(
         TriangleWave.hpp
         Level.cpp
         Level.hpp
+        main.cpp
 )

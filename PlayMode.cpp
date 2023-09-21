@@ -42,10 +42,10 @@ Load<Scene> world_scene(LoadTagDefault, []() -> Scene const * {
             });
 });
 
-PlayMode::PlayMode() :
+PlayMode::PlayMode(Level level) :
         scene(*world_scene),
         // TODO: get levels from the levels directory
-        level(std::filesystem::path(data_path("levels/level1/"))) {
+        level(level) {
     for (auto &transform: scene.transforms) {
         if (transform.name == "Player") player = &transform;
     }
@@ -216,7 +216,7 @@ void PlayMode::tick() {
         && 4 * (float) row <= player->position.y && player->position.y <= 4 * (float) (row + 1)) {
         ticks_in_win_cell += 1;
         if (ticks_in_win_cell > 8) {
-            set_current(nullptr);
+            set_current(next_mode);
         }
     } else {
         ticks_in_win_cell = 0;

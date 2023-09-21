@@ -72,7 +72,7 @@ Level::Level(std::filesystem::path const &dir) : background((dir / "background.w
     // load cells from png format
     glm::uvec2 size;
     std::vector<glm::u8vec4> data;
-    load_png(dir / "cells.png", &size, &data, LowerLeftOrigin);
+    load_png((dir / "cells.png").string(), &size, &data, LowerLeftOrigin);
     cells.resize(size.y);
     for (size_t row = 0; row < size.y; row++) {
         cells[row].resize(size.x);
