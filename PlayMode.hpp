@@ -22,7 +22,7 @@ struct PlayMode : Mode {
     
     void draw(glm::uvec2 const &drawable_size) override;
     
-    static constexpr float TICK = TriangleWave::LENGTH;
+    float tick_length;
     float since_tick = 0;
     size_t tick_count = 0;
     
@@ -48,4 +48,6 @@ struct PlayMode : Mode {
     
     TriangleWave triangle_x;
     TriangleWave triangle_y;
+    
+    std::shared_ptr<Sound::PlayingSample> playing_background;
 };

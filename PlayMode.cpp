@@ -44,62 +44,53 @@ Load<Scene> world_scene(LoadTagDefault, []() -> Scene const * {
 
 PlayMode::PlayMode() :
         scene(*world_scene),
-        // TODO: do something about this
-        level(
-                {
-                        {Cell::Corner, Cell::Horiz,  Cell::Horiz,  Cell::Horiz},
-                        {Cell::Vert,   Cell::Corner, Cell::Horiz,  Cell::None},
-                        {Cell::Vert,   Cell::Vert,   Cell::Corner, Cell::Horiz},
-                        {Cell::Vert,   Cell::Vert,   Cell::None,   Cell::Vert},
-                },
-                0, 0, 0, 3
-        
-        ) {
+        // TODO: get levels from the levels directory
+        level(data_path("levels/level1/")) {
     for (auto &transform: scene.transforms) {
         if (transform.name == "Player") player = &transform;
     }
     if (player == nullptr) throw std::runtime_error("Player not found.");
-    player->position = glm::vec3(level.start_row * 4 + 2, level.start_col * 4 + 2, 0);
+    player->position.x = (float) level.width() * 4 * level.x.get_position(level.x.start);
+    player->position.y = (float) level.height() * 4 * level.y.get_position(level.y.start);
     
-    for (size_t row = 0; row < level.height; row++) {
-        for (size_t col = 0; col < level.width; col++) {
+    for (size_t row = 0; row < level.height(); row++) {
+        for (size_t col = 0; col < level.width(); col++) {
             if (level.has_border(row, col, Direction::Down)) {
                 scene.transforms.emplace_back();
-                scene.transforms.back().position = glm::vec3(4 * row, 4 * col + 2, 0);
-                scene.transforms.back().rotation = glm::angleAxis(glm::pi<float>() / 2.0f, glm::vec3(0, 0, 1));
+                scene.transforms.back().position = glm::vec3(4 * col + 2, 4 * row, 0);
+                scene.transforms.back().rotation = glm::angleAxis(0.0f, glm::vec3(0, 0, 1));
                 scene.drawables.emplace_back(&scene.transforms.back());
                 scene.drawables.back().pipeline = wall_pipeline;
             }
             if (level.has_border(row, col, Direction::Left)) {
                 scene.transforms.emplace_back();
-                scene.transforms.back().position = glm::vec3(4 * row + 2, 4 * col, 0);
-                scene.transforms.back().rotation = glm::angleAxis(0.0f, glm::vec3(0, 0, 1));
+                scene.transforms.back().position = glm::vec3(4 * col, 4 * row + 2, 0);
+                scene.transforms.back().rotation = glm::angleAxis(glm::pi<float>() / 2.0f, glm::vec3(0, 0, 1));
                 scene.drawables.emplace_back(&scene.transforms.back());
                 scene.drawables.back().pipeline = wall_pipeline;
             }
         }
     }
-    for (size_t col = 0; col < level.width; col++) {
-        if (level.has_border(level.height - 1, col, Direction::Up)) {
+    for (size_t col = 0; col < level.width(); col++) {
+        if (level.has_border(level.height() - 1, col, Direction::Up)) {
             scene.transforms.emplace_back();
-            scene.transforms.back().position = glm::vec3(4 * level.height, 4 * col + 2, 0);
-            scene.transforms.back().rotation = glm::angleAxis(glm::pi<float>() / 2.0f, glm::vec3(0, 0, 1));
+            scene.transforms.back().position = glm::vec3(4 * col + 2, 4 * level.height(), 0);
+            scene.transforms.back().rotation = glm::angleAxis(0.0f, glm::vec3(0, 0, 1));
             scene.drawables.emplace_back(&scene.transforms.back());
             scene.drawables.back().pipeline = wall_pipeline;
         }
     }
-    for (size_t row = 0; row < level.height; row++) {
-        if (level.has_border(row, level.width - 1, Direction::Right)) {
+    for (size_t row = 0; row < level.height(); row++) {
+        if (level.has_border(row, level.width() - 1, Direction::Right)) {
             scene.transforms.emplace_back();
-            scene.transforms.back().position = glm::vec3(4 * row + 2, 4 * level.width, 0);
-            scene.transforms.back().rotation = glm::angleAxis(0.0f, glm::vec3(0, 0, 1));
+            scene.transforms.back().position = glm::vec3(4 * level.width(), 4 * row + 2, 0);
+            scene.transforms.back().rotation = glm::angleAxis(glm::pi<float>() / 2.0f, glm::vec3(0, 0, 1));
             scene.drawables.emplace_back(&scene.transforms.back());
             scene.drawables.back().pipeline = wall_pipeline;
         }
     }
     
     // get pointer to camera for convenience:
-    // TODO: make this nicer and not look at scene cameras
     if (scene.cameras.size() != 1)
         throw std::runtime_error(
                 "Expecting scene to have exactly one camera, but it has " + std::to_string(scene.cameras.size()));
@@ -107,12 +98,10 @@ PlayMode::PlayMode() :
     // camera follows the player
     camera->transform->parent = player;
     
-    // start location sound
-    triangle_x.set_frequency(440);
-    triangle_y.set_frequency(440);
-    
-    // start background
-    // TODO
+    // start sound
+    triangle_x.set_frequency(level.x.get_frequency(player->position.x / (float) (4 * level.width())));
+    triangle_y.set_frequency(level.y.get_frequency(player->position.y / (float) (4 * level.height())));
+    tick_length = triangle_x.length;
 }
 
 PlayMode::~PlayMode() = default;
@@ -179,20 +168,20 @@ void PlayMode::update(float elapsed) {
         if (move != glm::vec3(0.0f, 0.0f, 0.0f)) move = glm::normalize(move) * PlayerSpeed * elapsed;
         
         player->position += move;
-        auto row = (size_t) (player->position.x / 4), col = (size_t) (player->position.y / 4);
+        auto row = (size_t) (player->position.y / 4), col = (size_t) (player->position.x / 4);
         // Assume player has radius 0.5
         constexpr float r = 0.6f;
         if (level.has_border(row, col, Direction::Down)) {
-            player->position.x = std::max(player->position.x, (float) row * 4 + r);
+            player->position.y = std::max(player->position.y, (float) row * 4 + r);
         }
         if (level.has_border(row, col, Direction::Up)) {
-            player->position.x = std::min(player->position.x, (float) (row + 1) * 4 - r);
+            player->position.y = std::min(player->position.y, (float) (row + 1) * 4 - r);
         }
         if (level.has_border(row, col, Direction::Left)) {
-            player->position.y = std::max(player->position.y, (float) col * 4 + r);
+            player->position.x = std::max(player->position.x, (float) col * 4 + r);
         }
         if (level.has_border(row, col, Direction::Right)) {
-            player->position.y = std::min(player->position.y, (float) (col + 1) * 4 - r);
+            player->position.x = std::min(player->position.x, (float) (col + 1) * 4 - r);
         }
     }
     
@@ -204,17 +193,20 @@ void PlayMode::update(float elapsed) {
     
     // tick
     since_tick += elapsed;
-    while (since_tick > TICK) {
-        since_tick -= TICK;
+    while (since_tick > tick_length) {
+        since_tick -= tick_length;
         tick();
     }
 }
 
 void PlayMode::tick() {
     if (tick_count % 2 == 1) {
-        triangle_x.set_frequency(440 * powf(2, player->position.x / 1000));
+        if (!playing_background) {
+            playing_background = loop(level.background, 2.0f);
+        }
+        triangle_x.set_frequency(level.x.get_frequency(player->position.x / (float) (4 * level.width())));
+        triangle_y.set_frequency(level.y.get_frequency(player->position.y / (float) (4 * level.height())));
         triangle_x.play();
-        triangle_y.set_frequency(440 * powf(2, player->position.y / 1000));
         triangle_y.play();
     }
     

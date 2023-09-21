@@ -4,10 +4,14 @@
 
 // Entries per second
 constexpr size_t EPS = 48000;
-// Number of indices
-constexpr size_t SIZE = (size_t) (TriangleWave::LENGTH * EPS);
 
-TriangleWave::TriangleWave(float frequency) : sample(std::vector<float>(SIZE)) {
+size_t TriangleWave::size() const {
+    return sample.data.size();
+}
+
+TriangleWave::TriangleWave(float frequency, float bpm) : sample(std::vector<float>()) {
+    length = 60.0f / bpm;
+    sample.data.resize((size_t) (length * (float) EPS));
     set_frequency(frequency);
 }
 
@@ -27,8 +31,10 @@ void TriangleWave::stop(float ramp) const {
 
 void TriangleWave::set_frequency(float frequency) {
     float wavelength = (float) EPS / frequency;
-    for (size_t i = 0; i < EPS; i++) {
-        float vol = std::min({(float) (4 * i) / EPS, (float) (4 * (EPS - i)) / EPS, 1.0f});
+    for (size_t i = 0; i < size(); i++) {
+        // manual ramp for a softer fade in/out
+        float denom = (float) std::min(EPS, size());
+        float vol = std::min({(float) (4 * i) / denom, (float) (4 * (size() - i)) / denom, 1.0f});
         float where = std::fmod((float) i, wavelength);
         if (where < wavelength / 2) {
             sample.data[i] = vol * 2 * where / wavelength;
@@ -38,4 +44,4 @@ void TriangleWave::set_frequency(float frequency) {
     }
 }
 
-TriangleWave::TriangleWave() : TriangleWave(440) {}
+TriangleWave::TriangleWave() : TriangleWave(440, 120) {}

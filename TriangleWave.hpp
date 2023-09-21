@@ -7,14 +7,19 @@
  */
 struct TriangleWave {
     // How long to play the sound, in seconds
-    static constexpr float LENGTH = 1.0f;
+    float length;
     
     Sound::Sample sample;
     std::shared_ptr<Sound::PlayingSample> playing_sample;
     
+    /*
+     * Returns the number of indices in the wave. Meant for internal use.
+     */
+    size_t size() const;
+    
     TriangleWave();
     
-    explicit TriangleWave(float frequency);
+    TriangleWave(float frequency, float bpm);
     
     ~TriangleWave();
     

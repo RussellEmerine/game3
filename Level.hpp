@@ -1,6 +1,9 @@
 #pragma once
 
+#include "Sound.hpp"
+
 #include <vector>
+#include <filesystem>
 #include <iostream>
 
 // Enum to represent whether a cell has borders to its top and left.
@@ -22,6 +25,24 @@ enum class Direction {
     Right
 };
 
+struct FrequencyAxis {
+    float min, max, start, goal;
+    
+    FrequencyAxis();
+    
+    /*
+     * Interpolates the frequency given coordinate x, which represents the fraction of the way from min to max.
+     * 0 <= x <= 1 should be true.
+     */
+    float get_frequency(float x) const;
+    
+    /*
+     * Reverts a frequency to a position, represented as a fraction of the way from min to max.
+     * min <= f <= max should be true.
+     */
+    float get_position(float f) const;
+};
+
 /*
  * A level structure. Just stores starting info, should not be modified after creation.
  * Starts at the bottom left corner.
@@ -29,19 +50,18 @@ enum class Direction {
  * TODO: add frequency bounds, beep rate and background sound
  */
 struct Level {
-    size_t width, height;
-    size_t start_row, start_col;
-    size_t goal_row, goal_col;
+    FrequencyAxis x, y;
+    float bpm;
     
-    std::vector<Cell> cells;
+    std::vector<std::vector<Cell>> cells;
     
-    explicit Level(std::vector<std::vector<Cell>> cells,
-                   size_t start_row, size_t start_col,
-                   size_t goal_row, size_t goal_col);
+    Sound::Sample background;
     
-    explicit Level(std::istream in);
+    explicit Level(std::filesystem::path const &dir);
     
     bool has_border(size_t row, size_t col, Direction direction);
     
-    Cell get(size_t row, size_t col);
+    size_t width() const;
+    
+    size_t height() const;
 };
