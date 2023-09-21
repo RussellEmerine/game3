@@ -114,7 +114,13 @@ int main(int argc, char **argv) {
     
     //------------ create game mode + make current --------------
     Level level1(std::filesystem::path(data_path("levels/level1/")));
-    Mode::set_current(std::make_shared<PlayMode>(level1));
+    Level level2(std::filesystem::path(data_path("levels/level2/")));
+    std::shared_ptr<Mode> empty;
+    std::shared_ptr<Mode> mode1;
+    std::shared_ptr<Mode> mode2;
+    mode1 = std::make_shared<PlayMode>(level1, mode2);
+    mode2 = std::make_shared<PlayMode>(level2, empty);
+    Mode::set_current(mode1);
     
     //------------ main loop ------------
     

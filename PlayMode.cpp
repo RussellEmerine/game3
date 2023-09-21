@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <glm/gtc/type_ptr.hpp>
+#include <utility>
 
 // Assume the wall length is 4
 
@@ -42,9 +43,12 @@ Load<Scene> world_scene(LoadTagDefault, []() -> Scene const * {
             });
 });
 
-PlayMode::PlayMode(Level level) :
+PlayMode::PlayMode(Level level, std::shared_ptr<Mode> &next_mode) :
         scene(*world_scene),
-        level(level) {
+        level(level),
+        triangle_x(level.x.start, level.bpm),
+        triangle_y(level.y.start, level.bpm),
+        next_mode(next_mode) {
     for (auto &transform: scene.transforms) {
         if (transform.name == "Player") player = &transform;
     }
@@ -97,7 +101,7 @@ PlayMode::PlayMode(Level level) :
     // camera follows the player
     camera->transform->parent = player;
     
-    // start sound
+    // frequency should be correct by now but let's set it again why not
     triangle_x.set_frequency(level.x.get_frequency(player->position.x / (float) (4 * level.width())));
     triangle_y.set_frequency(level.y.get_frequency(player->position.y / (float) (4 * level.height())));
     tick_length = triangle_x.length;
@@ -215,6 +219,9 @@ void PlayMode::tick() {
         && 4 * (float) row <= player->position.y && player->position.y <= 4 * (float) (row + 1)) {
         ticks_in_win_cell += 1;
         if (ticks_in_win_cell > 8) {
+            playing_background->stop();
+            triangle_x.stop();
+            triangle_y.stop();
             set_current(next_mode);
         }
     } else {

@@ -11,7 +11,7 @@
 #include <deque>
 
 struct PlayMode : Mode {
-    PlayMode(Level level);
+    PlayMode(Level level, std::shared_ptr<Mode> &next_mode);
     
     ~PlayMode() override;
     
@@ -52,5 +52,5 @@ struct PlayMode : Mode {
     
     std::shared_ptr<Sound::PlayingSample> playing_background;
     
-    std::shared_ptr<Mode> next_mode;
+    std::shared_ptr<Mode> &next_mode;
 };
