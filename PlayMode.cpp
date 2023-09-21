@@ -208,8 +208,9 @@ void PlayMode::tick() {
             playing_background = loop(level.background, 2.0f);
         }
         triangle_x.set_frequency(level.x.get_frequency(player->position.x / (float) (4 * level.width())));
-        triangle_y.set_frequency(level.y.get_frequency(player->position.y / (float) (4 * level.height())));
         triangle_x.play();
+    } else if (playing_background) {
+        triangle_y.set_frequency(level.y.get_frequency(player->position.y / (float) (4 * level.height())));
         triangle_y.play();
     }
     

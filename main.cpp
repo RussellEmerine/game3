@@ -113,14 +113,20 @@ int main(int argc, char **argv) {
     call_load_functions();
     
     //------------ create game mode + make current --------------
+    Level level0(std::filesystem::path(data_path("levels/level0/")));
     Level level1(std::filesystem::path(data_path("levels/level1/")));
     Level level2(std::filesystem::path(data_path("levels/level2/")));
+    Level level3(std::filesystem::path(data_path("levels/level3/")));
     std::shared_ptr<Mode> empty;
+    std::shared_ptr<Mode> mode0;
     std::shared_ptr<Mode> mode1;
     std::shared_ptr<Mode> mode2;
+    std::shared_ptr<Mode> mode3;
+    mode0 = std::make_shared<PlayMode>(level0, mode1);
     mode1 = std::make_shared<PlayMode>(level1, mode2);
-    mode2 = std::make_shared<PlayMode>(level2, empty);
-    Mode::set_current(mode1);
+    mode2 = std::make_shared<PlayMode>(level2, mode3);
+    mode3 = std::make_shared<PlayMode>(level3, empty);
+    Mode::set_current(mode0);
     
     //------------ main loop ------------
     
