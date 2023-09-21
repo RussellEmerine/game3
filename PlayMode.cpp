@@ -205,7 +205,7 @@ void PlayMode::update(float elapsed) {
 void PlayMode::tick() {
     if (tick_count % 2 == 1) {
         if (!playing_background) {
-            playing_background = loop(level.background, 2.0f);
+            playing_background = loop(level.background, 3.0f);
         }
         triangle_x.set_frequency(level.x.get_frequency(player->position.x / (float) (4 * level.width())));
         triangle_x.play();

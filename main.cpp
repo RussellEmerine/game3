@@ -117,15 +117,18 @@ int main(int argc, char **argv) {
     Level level1(std::filesystem::path(data_path("levels/level1/")));
     Level level2(std::filesystem::path(data_path("levels/level2/")));
     Level level3(std::filesystem::path(data_path("levels/level3/")));
+    Level level4(std::filesystem::path(data_path("levels/level4/")));
     std::shared_ptr<Mode> empty;
     std::shared_ptr<Mode> mode0;
     std::shared_ptr<Mode> mode1;
     std::shared_ptr<Mode> mode2;
     std::shared_ptr<Mode> mode3;
+    std::shared_ptr<Mode> mode4;
     mode0 = std::make_shared<PlayMode>(level0, mode1);
     mode1 = std::make_shared<PlayMode>(level1, mode2);
     mode2 = std::make_shared<PlayMode>(level2, mode3);
-    mode3 = std::make_shared<PlayMode>(level3, empty);
+    mode3 = std::make_shared<PlayMode>(level3, mode4);
+    mode4 = std::make_shared<PlayMode>(level4, empty);
     Mode::set_current(mode0);
     
     //------------ main loop ------------
