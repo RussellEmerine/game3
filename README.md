@@ -1,8 +1,9 @@
-# (TODO: your game's title)
+# Harmonia
 
-Author: (TODO: your name)
+Author: Russell Emerine
 
-Design: (TODO: In two sentences or fewer, describe what is new and interesting about your game.)
+Design: Harmonia is a game where you control two tones with your position.
+The goal is to make the tones harmonious with the background movement.
 
 Screen Shot:
 
@@ -10,6 +11,10 @@ Screen Shot:
 
 How To Play:
 
-(TODO: describe the controls and (if needed) goals/strategy.)
+Move with WASD.
+You'll hear that one tone becomes sharper or flatter as you move up and down,
+and another tone becomes sharper or flatter as you move left and right.
+There is one position that sounds harmonious with the background music.
+Stand there for a few seconds and you'll move on to the next level.
 
 This game was built with [NEST](NEST.md).
