@@ -51,7 +51,7 @@ size_t Level::height() const {
     return cells.size();
 }
 
-Level::Level(std::filesystem::path const &dir) : background(dir / "background.wav") {
+Level::Level(std::filesystem::path const &dir) : background((dir / "background.wav").string()) {
     // sound loaded above
     
     // load floats from chunk format
