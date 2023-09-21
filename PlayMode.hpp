@@ -25,6 +25,7 @@ struct PlayMode : Mode {
     float tick_length;
     float since_tick = 0;
     size_t tick_count = 0;
+    size_t ticks_in_win_cell = 0;
     
     void tick();
     

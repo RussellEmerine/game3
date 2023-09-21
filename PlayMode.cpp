@@ -45,7 +45,7 @@ Load<Scene> world_scene(LoadTagDefault, []() -> Scene const * {
 PlayMode::PlayMode() :
         scene(*world_scene),
         // TODO: get levels from the levels directory
-        level(data_path("levels/level1/")) {
+        level(std::filesystem::path(data_path("levels/level1/"))) {
     for (auto &transform: scene.transforms) {
         if (transform.name == "Player") player = &transform;
     }
@@ -208,6 +208,18 @@ void PlayMode::tick() {
         triangle_y.set_frequency(level.y.get_frequency(player->position.y / (float) (4 * level.height())));
         triangle_x.play();
         triangle_y.play();
+    }
+    
+    auto row = (size_t) ((float) level.height() * level.y.get_position(level.y.goal));
+    auto col = (size_t) ((float) level.width() * level.x.get_position(level.x.goal));
+    if (4 * (float) col <= player->position.x && player->position.x <= 4 * (float) (col + 1)
+        && 4 * (float) row <= player->position.y && player->position.y <= 4 * (float) (row + 1)) {
+        ticks_in_win_cell += 1;
+        if (ticks_in_win_cell > 8) {
+            set_current(nullptr);
+        }
+    } else {
+        ticks_in_win_cell = 0;
     }
     
     tick_count++;
